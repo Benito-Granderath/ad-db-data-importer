@@ -10,6 +10,40 @@ public static class ActiveDirectoryService
 {
     public static List<UserDataModel> users = new();
     public static List<GroupDataModel> groups = new();
+    public static string? GetGroupObjectSIDByDN(string distinguishedName)
+    {
+        try
+        {
+            string ldapPath = "LDAP://wuensche-group.local";
+            using (DirectoryEntry de = new DirectoryEntry(ldapPath))
+            {
+                using (DirectorySearcher searcher = new DirectorySearcher(de))
+                {
+                    searcher.Filter = $"(distinguishedName={distinguishedName})";
+                    searcher.PropertiesToLoad.Add("objectSid");
+
+                    SearchResult result = searcher.FindOne();
+                    if (result != null)
+                    {
+                        byte[]? sidBytes = result.Properties["objectSid"][0] as byte[];
+                        Console.WriteLine(distinguishedName);
+                        Console.WriteLine(new SecurityIdentifier(sidBytes, 0).ToString());
+                        if (sidBytes != null)
+                        {
+                            return new SecurityIdentifier(sidBytes, 0).ToString();
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Fehler {distinguishedName}: {ex.Message}");
+        }
+        return null;
+    }
+
+
 
     public static void ActiveDirectoryQuery()
     {
@@ -32,14 +66,25 @@ public static class ActiveDirectoryService
                             sAMAccountName = de.Properties["sAMAccountName"].Value?.ToString() ?? string.Empty,
                             userPrincipalName = de.Properties["userPrincipalName"].Value?.ToString() ?? string.Empty,
                             displayName = de.Properties["displayName"].Value?.ToString() ?? string.Empty,
+                            TelephoneNumber = de.Properties["TelephoneNumber"].Value?.ToString() ?? string.Empty,
                             department = de.Properties["department"].Value?.ToString() ?? string.Empty,
                             company = de.Properties["company"].Value?.ToString() ?? string.Empty,
                             description = de.Properties["description"].Value?.ToString() ?? string.Empty,
                             title = de.Properties["title"].Value?.ToString() ?? string.Empty,
                         };
+
                         users.Add(user);
-                        Console.WriteLine(de.Properties["sAMAccountName"].Value?.ToString());
-                        Console.WriteLine(de.Properties["department"].Value?.ToString());
+                        var memberOfGroups = de.Properties["memberOf"];
+                        if (memberOfGroups != null)
+                        {
+                            foreach (var dn in memberOfGroups)
+                            {
+                                string groupDn = dn.ToString();
+                                string groupSid = GetGroupObjectSIDByDN(groupDn);
+                                user.GroupSIDs.Add(groupSid);
+                                
+                            }
+                        }
                     }
                 }
             }
@@ -56,6 +101,7 @@ public static class ActiveDirectoryService
                         var group = new GroupDataModel
                         {
                             objectSID = new SecurityIdentifier(objectSidProperty, 0).ToString(),
+                            CommonName = de.Properties["cn"].Value?.ToString() ?? string.Empty,
                             description = de.Properties["description"].Value?.ToString() ?? string.Empty,
                             groupType = de.Properties["groupType"].Value?.ToString() ?? string.Empty,
                             ManagedBy = de.Properties["ManagedBy"].Value?.ToString() ?? string.Empty,
@@ -64,14 +110,10 @@ public static class ActiveDirectoryService
                             
                         };
                         groups.Add(group);
-                        Console.WriteLine(de.Properties["description"].Value?.ToString());
-                        Console.WriteLine(de.Properties["groupType"]);
                     }
                 }
             }
-            Console.WriteLine(groups);
-
-            Console.WriteLine(users);
         }
     }
+   
 }

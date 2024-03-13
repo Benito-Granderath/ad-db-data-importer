@@ -6,9 +6,11 @@
         public string? sAMAccountName { get; set; }
         public string? userPrincipalName {  get; set; }
         public string? displayName { get; set; }
+        public string? TelephoneNumber { get; set; }
         public string? department { get; set; }
         public string? company { get; set; }
         public string? description { get; set; }
         public string? title { get; set; }
+        public List<string> GroupSIDs { get; set; } = new List<string>();
     }
 }

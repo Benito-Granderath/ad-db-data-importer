@@ -3,6 +3,7 @@
     public class GroupDataModel
     {
         public required string objectSID { get; set; }
+        public string? CommonName { get; set; }
         public string? description { get; set; }
         public string? groupType { get; set; }
         public string? ManagedBy { get; set; }
