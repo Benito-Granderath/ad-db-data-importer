@@ -14,7 +14,7 @@ public static class ActiveDirectoryService
     {
         try
         {
-            string ldapPath = "LDAP://wuensche-group.local";
+            string ldapPath = "AD-PATH HERE";
             using (DirectoryEntry de = new DirectoryEntry(ldapPath))
             {
                 using (DirectorySearcher searcher = new DirectorySearcher(de))
