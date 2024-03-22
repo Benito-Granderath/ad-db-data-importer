@@ -26,8 +26,6 @@ public static class ActiveDirectoryService
                     if (result != null)
                     {
                         byte[]? sidBytes = result.Properties["objectSid"][0] as byte[];
-                        Console.WriteLine(distinguishedName);
-                        Console.WriteLine(new SecurityIdentifier(sidBytes, 0).ToString());
                         if (sidBytes != null)
                         {
                             return new SecurityIdentifier(sidBytes, 0).ToString();
@@ -42,9 +40,6 @@ public static class ActiveDirectoryService
         }
         return null;
     }
-
-
-
     public static void ActiveDirectoryQuery()
     {
         using (var context = new PrincipalContext(ContextType.Domain))
@@ -74,6 +69,7 @@ public static class ActiveDirectoryService
                         };
 
                         users.Add(user);
+                        Console.WriteLine($"Nutzer {user.sAMAccountName} zu Liste hinzugefügt");
                         var memberOfGroups = de.Properties["memberOf"];
                         if (memberOfGroups != null)
                         {
@@ -110,6 +106,7 @@ public static class ActiveDirectoryService
                             
                         };
                         groups.Add(group);
+                        Console.WriteLine($"Gruppe {group.CommonName} zu Liste hinzugefügt");
                     }
                 }
             }
